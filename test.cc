@@ -1,3 +1,4 @@
+#include <chrono>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -37,7 +38,16 @@ int main(int argc, char **argv) {
   std::cout << data.size() / 3 << " points read." << std::endl;
 
   std::vector<double> result(3);
+
+  std::chrono::steady_clock::time_point start, stop;
+  start = std::chrono::steady_clock::now();
+
   auto found = fit_sphere(&data[0], data.size() / 3, radius, &result[0]);
+
+  stop = std::chrono::steady_clock::now();
+  std::cout << "Evaluation time: "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count()
+            << "ms" << std::endl;
 
   if (!found)
     std::cout << "Warning: iteration exceeded max. count before a good solution was found.\n";

@@ -20,7 +20,7 @@ bool fit_sphere(const double *data, size_t m, double R, double *result,
       J.block<3,3>(3*i,0) = id - (id - v * v.transpose() / (d * d)) * R / d;
       rhs.segment<3>(3*i) = v / d * (d - R);
     }
-    Vector3d delta = J.colPivHouseholderQr().solve(rhs);
+    Vector3d delta = J.householderQr().solve(rhs);
     a += lambda * delta;
     if (delta.norm() < tolerance)
       return true;
