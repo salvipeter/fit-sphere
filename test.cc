@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
   std::cout << data.size() / 3 << " points read." << std::endl;
 
   std::vector<double> result(3);
-  auto found = fit_sphere(&data[0], data.size(), radius, &result[0]);
+  auto found = fit_sphere(&data[0], data.size() / 3, radius, &result[0]);
 
   if (!found)
     std::cout << "Warning: iteration exceeded max. count before a good solution was found.\n";
