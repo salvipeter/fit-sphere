@@ -111,30 +111,29 @@ function lsq_fit(X, R, tolerance = 1.0e-7, max_iteration = 1000, λ = 0.1)
 end
 
 function lsq_fit_noradius(X, tolerance = 1.0e-7, max_iteration = 1000, λ = 0.1)
-    n = length(X[1]) + 1
+    n = length(X[1])
     m = length(X)
     Xc = sum(X) / m
     R = sqrt(sum(Xi -> norm(Xi - Xc)^2, X) / m)
     a = vcat(R, Xc)
-    J = Array{Float64}(undef, n * m, n)
+    J = Array{Float64}(undef, n * m, n + 1)
     rhs = Array{Float64}(undef, n * m)
-    dRda = [1 0 0 0; 0 0 0 0; 0 0 0 0; 0 0 0 0]
-    dXda = [0 1 0 0; 0 0 1 0; 0 0 1 0; 0 0 0 1]
     for _ in 1:max_iteration
         R = a[1]
-        Xc = a[2:n]
+        Xc = a[2:end]
         for i in 1:m
             v = X[i] - Xc
             d = norm(v)
-            J[(i-1)*n+1:i*n,:] = dXda + v / d * dRda - R / d * (I - dot(v, v) / d^2) * dXda
+            J[(i-1)*n+1:i*n,1] = v / d
+            J[(i-1)*n+1:i*n,2:end] = I - R / d * (I - v * transpose(v) / d^2)
             rhs[(i-1)*n+1:i*n] = v / d * (d - R)
         end
         Δa = J \ rhs
         a += λ * Δa
-        norm(Δa) < tolerance && return a
+        norm(Δa) < tolerance && return a[1], a[2:end]
     end
     @warn "Exited with maximum iteration"
-    a[1], a[2:n]
+    a[1], a[2:end]
 end
 
 function test()
@@ -151,7 +150,7 @@ function test()
     println("[ LSQ ] Error: $(norm(p - origin))")
     @time R, p = lsq_fit_noradius(data, 1.0e-7, 1000)
     write_result("/tmp/fit", 100, p, R)
-    println("[LSQwo] Error: $(norm(p - origin)) and $(abs(R - r))")
+    println("[LSQ-R] Error: $(norm(p - origin)) and $(abs(R - r))")
 end
 
 function test3d()
